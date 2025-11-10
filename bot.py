@@ -74,7 +74,7 @@ def reply_to_user(message: Message):
     try:
         user_id = int(parts[1])
         reply_text = parts[2]
-        bot.send_message(user_id, f"🔮 Ответ от Елены Таро:\n\n{reply_text}")
+        bot.send_message(user_id, reply_text)
         bot.send_message(ADMIN_ID, "✅ Ответ отправлен.")
     except Exception as e:
         bot.send_message(ADMIN_ID, f"⚠️ Ошибка: {e}")
