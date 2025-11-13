@@ -56,6 +56,8 @@ def _send_format_hint():
         ADMIN_ID,
         "Формат команды:\n/reply <user_id> <текст ответа>"
     )
+    bot.register_message_handler(reply_to_user, commands=['reply'])
+    bot.register_message_handler(reply_with_photo, content_types=['photo'])
 
 
 @bot.message_handler(commands=['reply'])
