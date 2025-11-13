@@ -21,6 +21,10 @@ ADMIN_ID = int(os.getenv("ADMIN_ID", 220493509))  # твой id
 MAIN_BOT_TOKEN = os.getenv("BOT_TOKEN")
 SUPPORT_BOT_TOKEN = os.getenv("SUPPORT_BOT_TOKEN")
 
+def _parse_reply_command(raw_text: str):
+    parts = raw_text.split(maxsplit=2)
+    if len(parts) < 3:
+        return None, None
 
 def _parse_reply_command(raw_text: str):
     parts = raw_text.split(maxsplit=2)
@@ -38,6 +42,8 @@ def _send_format_hint(bot: telebot.TeleBot, admin_id: int):
         admin_id,
         "Формат команды:\n/reply <user_id> <текст ответа>"
     )
+    bot.register_message_handler(reply_to_user, commands=['reply'])
+    bot.register_message_handler(reply_with_photo, content_types=['photo'])
 
 
 class ConfiguredBot:
