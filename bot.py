@@ -46,7 +46,7 @@ def handle_client_message(message: Message):
         f"{text}"
     )
 
-     # автоответ клиенту
+    # автоответ клиенту
     bot.send_message(
         user_id,
         "🌙 Я получила твой запрос.\n"
@@ -56,6 +56,24 @@ def handle_client_message(message: Message):
 
 
 # === Твоя команда для ответа клиенту ===
+def _parse_reply_command(raw_text: str):
+    parts = raw_text.split(maxsplit=2)
+    if len(parts) < 3:
+        return None, None
+
+    try:
+        return int(parts[1]), parts[2]
+    except ValueError:
+        return None, None
+
+
+def _send_format_hint():
+    bot.send_message(
+        ADMIN_ID,
+        "Формат команды:\n/reply <user_id> <текст ответа>"
+    )
+
+
 @bot.message_handler(commands=['reply'])
 def reply_to_user(message: Message):
     # только ты можешь использовать /reply
@@ -63,19 +81,37 @@ def reply_to_user(message: Message):
         bot.send_message(message.chat.id, "Эта команда только для Елены 🌙")
         return
 
-    parts = message.text.split(maxsplit=2)
-    if len(parts) < 3:
-        bot.send_message(
-            ADMIN_ID,
-            "Формат команды:\n/reply <user_id> <текст ответа>"
-        )
+    user_id, reply_text = _parse_reply_command(message.text)
+    if user_id is None:
+        _send_format_hint()
         return
 
     try:
-        user_id = int(parts[1])
-        reply_text = parts[2]
         bot.send_message(user_id, reply_text)
         bot.send_message(ADMIN_ID, "✅ Ответ отправлен.")
+    except Exception as e:
+        bot.send_message(ADMIN_ID, f"⚠️ Ошибка: {e}")
+
+
+@bot.message_handler(content_types=['photo'])
+def reply_with_photo(message: Message):
+    if message.chat.id != ADMIN_ID:
+        return
+
+    caption = message.caption or ""
+    if not caption.startswith('/reply'):
+        _send_format_hint()
+        return
+
+    user_id, reply_text = _parse_reply_command(caption)
+    if user_id is None:
+        _send_format_hint()
+        return
+
+    try:
+        file_id = message.photo[-1].file_id
+        bot.send_photo(user_id, file_id, caption=reply_text)
+        bot.send_message(ADMIN_ID, "✅ Ответ с фото отправлен.")
     except Exception as e:
         bot.send_message(ADMIN_ID, f"⚠️ Ошибка: {e}")
 
